@@ -1,0 +1,70 @@
+name: Update cask
+
+# Reusable workflow: writes Casks/<cask>.rb in this tap and pushes it (race-safe).
+# Any app's release workflow calls this with its details + a write-scoped deploy-key secret.
+on:
+  workflow_call:
+    inputs:
+      cask:      { type: string, required: true }   # cask token, e.g. "multee"
+      version:   { type: string, required: true }
+      sha256:    { type: string, required: true }
+      url:       { type: string, required: true }   # full download URL (version already substituted)
+      name:      { type: string, required: true }
+      desc:      { type: string, required: true }
+      homepage:  { type: string, required: true }
+      app:       { type: string, required: true }   # e.g. "Multee.app"
+      min_macos: { type: string, required: false, default: ":sonoma" }
+    secrets:
+      deploy_key:
+        required: true   # SSH private key with write access to this tap repo
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    # Serialize this app's own cask updates; cross-app races are handled by the push-retry below.
+    concurrency:
+      group: tap-update-${{ inputs.cask }}
+      cancel-in-progress: false
+    steps:
+      - name: Write and push cask (with retry)
+        env:
+          KEY: ${{ secrets.deploy_key }}
+          CASK: ${{ inputs.cask }}
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ inputs.sha256 }}
+          URL: ${{ inputs.url }}
+          NAME: ${{ inputs.name }}
+          DESC: ${{ inputs.desc }}
+          HOMEPAGE: ${{ inputs.homepage }}
+          APP: ${{ inputs.app }}
+          MIN_MACOS: ${{ inputs.min_macos }}
+          TAP: git@github.com:Rudra370/homebrew-tap.git
+        run: |
+          set -uo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+
+          write_cask() {
+            mkdir -p tap/Casks
+            printf 'cask "%s" do\n  version "%s"\n  sha256 "%s"\n\n  url "%s"\n  name "%s"\n  desc "%s"\n  homepage "%s"\n\n  depends_on macos: ">= %s"\n\n  app "%s"\nend\n' \
+              "$CASK" "$VERSION" "$SHA" "$URL" "$NAME" "$DESC" "$HOMEPAGE" "$MIN_MACOS" "$APP" > "tap/Casks/$CASK.rb"
+          }
+
+          # Re-clone + retry so concurrent pushes from other apps' releases can't clobber each other.
+          for attempt in 1 2 3 4 5; do
+            rm -rf tap
+            git clone --depth 1 "$TAP" tap || { sleep 3; continue; }
+            write_cask
+            git -C tap config user.name "github-actions[bot]"
+            git -C tap config user.email "github-actions[bot]@users.noreply.github.com"
+            git -C tap add "Casks/$CASK.rb"
+            if git -C tap diff --cached --quiet; then echo "cask unchanged"; exit 0; fi
+            git -C tap commit -m "$CASK $VERSION"
+            if git -C tap push origin HEAD:main; then echo "pushed $CASK $VERSION"; exit 0; fi
+            echo "push rejected (concurrent update?) — retry $attempt"
+            sleep $(( (RANDOM % 5) + 2 ))
+          done
+          echo "failed to update cask after retries"; exit 1
