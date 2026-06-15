@@ -1,8 +1,8 @@
 cask "multee" do
-  version "0.1.9"
-  sha256 "cc9f5465f32c6aedff49385b459ecaa8f4bc3470f6a3d7230cda32c04dd57413"
+  version "0.1.10"
+  sha256 "b82672a25464aeb128f1650e54e57d387cec25473b4b11d4b37812ab424bc55b"
 
-  url "https://github.com/Rudra370/multee/releases/download/v0.1.9/Multee-0.1.9.zip"
+  url "https://github.com/Rudra370/multee/releases/download/v0.1.10/Multee-0.1.10.zip"
   name "Multee"
   desc "Native macOS app to manage multiple Claude Code sessions"
   homepage "https://github.com/Rudra370/multee"
