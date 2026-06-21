@@ -7,7 +7,7 @@ cask "lazy-csv-viewer" do
   desc "Lazy-loading viewer for very large CSV files"
   homepage "https://github.com/Rudra370/lazy_csv_viewer"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Lazy CSV Viewer.app"
 end

@@ -49,7 +49,7 @@ jobs:
 
           write_cask() {
             mkdir -p tap/Casks
-            printf 'cask "%s" do\n  version "%s"\n  sha256 "%s"\n\n  url "%s"\n  name "%s"\n  desc "%s"\n  homepage "%s"\n\n  depends_on macos: ">= %s"\n\n  app "%s"\nend\n' \
+            printf 'cask "%s" do\n  version "%s"\n  sha256 "%s"\n\n  url "%s"\n  name "%s"\n  desc "%s"\n  homepage "%s"\n\n  depends_on macos: %s\n\n  app "%s"\nend\n' \
               "$CASK" "$VERSION" "$SHA" "$URL" "$NAME" "$DESC" "$HOMEPAGE" "$MIN_MACOS" "$APP" > "tap/Casks/$CASK.rb"
           }
 

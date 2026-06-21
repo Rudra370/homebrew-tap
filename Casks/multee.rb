@@ -7,7 +7,7 @@ cask "multee" do
   desc "Native macOS app to manage multiple Claude Code sessions"
   homepage "https://github.com/Rudra370/multee"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Multee.app"
 end
