@@ -17,5 +17,9 @@ brew tap rudra370/tap
 brew install --cask lazy-csv-viewer
 ```
 
-The apps are unsigned, so the first time you launch one, right-click it and
-choose **Open** to get past Gatekeeper.
+The apps are unsigned, so after installing, clear the quarantine flag once so
+they open normally, e.g.:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Lazy CSV Viewer.app"
+```
