@@ -3,23 +3,22 @@
 A personal [Homebrew](https://brew.sh) tap. Each cask is auto-updated by its
 app's release workflow on every version tag.
 
-## Casks
+The apps are unsigned, so each command below pairs the install with an `xattr`
+that clears the Gatekeeper quarantine — copy-paste the whole line and the app
+just opens.
 
-| App | Install |
-| --- | --- |
-| [Multee](https://github.com/Rudra370/multee) — manage multiple Claude Code sessions | `brew install --cask rudra370/tap/multee` |
-| [Lazy CSV Viewer](https://github.com/Rudra370/lazy_csv_viewer) — fast viewer for huge CSV files | `brew install --cask rudra370/tap/lazy-csv-viewer` |
+## [Multee](https://github.com/Rudra370/multee)
 
-You can also tap once and install by short name:
+Manage multiple Claude Code sessions.
 
 ```sh
-brew tap rudra370/tap
-brew install --cask lazy-csv-viewer
+brew install --cask rudra370/tap/multee && xattr -dr com.apple.quarantine "/Applications/Multee.app"
 ```
 
-The apps are unsigned, so after installing, clear the quarantine flag once so
-they open normally, e.g.:
+## [Lazy CSV Viewer](https://github.com/Rudra370/lazy_csv_viewer)
+
+Fast viewer for huge CSV files.
 
 ```sh
-xattr -dr com.apple.quarantine "/Applications/Lazy CSV Viewer.app"
+brew install --cask rudra370/tap/lazy-csv-viewer && xattr -dr com.apple.quarantine "/Applications/Lazy CSV Viewer.app"
 ```
