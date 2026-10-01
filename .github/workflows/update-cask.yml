@@ -14,6 +14,9 @@ on:
       homepage:  { type: string, required: true }
       app:       { type: string, required: true }   # e.g. "Multee.app"
       min_macos: { type: string, required: false, default: ":sonoma" }
+      # The download needs a GitHub login (a private repo's release, fetched through the API): the cask sends the
+      # installing user's HOMEBREW_GITHUB_API_TOKEN. Off by default, so other casks come out exactly as before.
+      token_header: { type: boolean, required: false, default: false }
     secrets:
       deploy_key:
         required: true   # SSH private key with write access to this tap repo
@@ -38,6 +41,7 @@ jobs:
           HOMEPAGE: ${{ inputs.homepage }}
           APP: ${{ inputs.app }}
           MIN_MACOS: ${{ inputs.min_macos }}
+          TOKEN_HEADER: ${{ inputs.token_header }}
           TAP: git@github.com:Rudra370/homebrew-tap.git
         run: |
           set -uo pipefail
@@ -49,8 +53,13 @@ jobs:
 
           write_cask() {
             mkdir -p tap/Casks
-            printf 'cask "%s" do\n  version "%s"\n  sha256 "%s"\n\n  url "%s"\n  name "%s"\n  desc "%s"\n  homepage "%s"\n\n  depends_on macos: %s\n\n  app "%s"\nend\n' \
-              "$CASK" "$VERSION" "$SHA" "$URL" "$NAME" "$DESC" "$HOMEPAGE" "$MIN_MACOS" "$APP" > "tap/Casks/$CASK.rb"
+            # With a token header, the url line carries the installer's GitHub token (read when brew runs).
+            URL_LINE=$(printf 'url "%s"' "$URL")
+            if [ "$TOKEN_HEADER" = "true" ]; then
+              URL_LINE=$(printf 'url "%s",\n      header: [\n        "Accept: application/octet-stream",\n        "Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",\n      ]' "$URL")
+            fi
+            printf 'cask "%s" do\n  version "%s"\n  sha256 "%s"\n\n  %s\n  name "%s"\n  desc "%s"\n  homepage "%s"\n\n  depends_on macos: %s\n\n  app "%s"\nend\n' \
+              "$CASK" "$VERSION" "$SHA" "$URL_LINE" "$NAME" "$DESC" "$HOMEPAGE" "$MIN_MACOS" "$APP" > "tap/Casks/$CASK.rb"
           }
 
           # Re-clone + retry so concurrent pushes from other apps' releases can't clobber each other.
