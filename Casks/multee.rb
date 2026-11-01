@@ -1,8 +1,8 @@
 cask "multee" do
-  version "0.1.102"
-  sha256 "3d71149921e7169f444d2e7caef389e0f571a0ef369eac84c2d9908a41bf69a5"
+  version "0.1.103"
+  sha256 "e13da6362342c9c3bf0749b4f8f4a5617c486c4af6bc3a06a83208c69fc06004"
 
-  url "https://api.github.com/repos/Rudra370/multee-releases/releases/assets/697900125",
+  url "https://api.github.com/repos/Rudra370/multee-releases/releases/assets/697912247",
       header: [
         "Accept: application/octet-stream",
         "Authorization: Bearer #{ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", "")}",
